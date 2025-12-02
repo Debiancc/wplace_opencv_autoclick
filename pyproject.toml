@@ -1,0 +1,19 @@
+[project]
+name = "wplace-opencv-autoclick"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ultralytics",
+    "opencv-python",
+    "pynput",
+    "mss",
+    "pillow",
+    "pywin32",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+]
