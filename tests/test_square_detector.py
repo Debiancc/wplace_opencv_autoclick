@@ -16,16 +16,9 @@ def detector():
 
 @pytest.fixture
 def test_image_path():
-    return os.path.join("screenshots", "screenshot_20251201_142015.png")
+    return os.path.join("tests", "test_image.png")
 
-@pytest.fixture
-def output_dir():
-    path = os.path.join("tests", "output")
-    if not os.path.exists(path):
-        os.makedirs(path)
-    return path
-
-def test_detection_with_sample_image(detector, test_image_path, output_dir):
+def test_detection_with_sample_image(detector, test_image_path):
     """Test detection using the specific sample image provided."""
     if not os.path.exists(test_image_path):
         pytest.skip(f"Test image not found: {test_image_path}")
@@ -34,20 +27,20 @@ def test_detection_with_sample_image(detector, test_image_path, output_dir):
     image = Image.open(test_image_path)
     
     # Run detection
-    detections = detector.detect_squares(image, visualize_steps=True)
+    detections = detector.detect_squares(image, visualize_steps=False)
     
     # Assertions
     assert isinstance(detections, list)
     print(f"Detected {len(detections)} squares")
     
-    # We expect some detections in this image
-    assert len(detections) > 0, "Should detect at least one square"
+    # We expect exactly 12 detections in this image
+    assert len(detections) == 12, f"Should detect exactly 12 squares, but found {len(detections)}"
     
     # Calculate absolute coordinates (simulating a region offset)
     offset_x, offset_y = 100, 100
     detections = detector.calculate_absolute_coordinates(detections, (offset_x, offset_y))
 
-    # Verify detection structure
+    # Verify detection structure and coordinates
     for det in detections:
         assert 'center' in det
         assert 'bbox' in det
@@ -59,12 +52,3 @@ def test_detection_with_sample_image(detector, test_image_path, output_dir):
         abs_x, abs_y = det['absolute_coords']
         assert abs_x == cx + offset_x
         assert abs_y == cy + offset_y
-        
-    # Visualize and save result
-    visualized = detector.visualize_detections(image, detections)
-    output_path = os.path.join(output_dir, "test_result_screenshot_20251201_142015.png")
-    visualized.save(output_path)
-    print(f"Saved visualization to: {output_path}")
-    
-    # Verify output file exists
-    assert os.path.exists(output_path)
