@@ -97,5 +97,5 @@ def debug_detection(image_path):
 
 if __name__ == "__main__":
     # Use the path provided by the user
-    img_path = r"c:\Users\debiancc\.gemini\antigravity\scratch\yolo_vision_project\screenshots\screenshot_20251130_171417.png"
-    debug_detection(img_path)
+    # img_path = r"c:\Users\debiancc\.gemini\antigravity\scratch\yolo_vision_project\screenshots\screenshot_20251130_171417.png"
+    # debug_detection(img_path)

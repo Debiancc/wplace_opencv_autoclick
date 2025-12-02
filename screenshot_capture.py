@@ -70,7 +70,7 @@ class RegionSelector:
     
     def create_instructions(self):
         """Display instructions on the overlay."""
-        instruction_text = "拖拽鼠标选择截图区域 | 按 ESC 取消"
+        instruction_text = "Drag to select screenshot region | Press ESC to cancel"
         self.canvas.create_text(
             self.screen_width // 2,
             30,
@@ -201,14 +201,14 @@ class ScreenshotCapture:
         region = selector.get_region()
         
         if region is None:
-            print("截图已取消")
+            print("Screenshot cancelled")
             return None, None
         
         # Crop the selected region
         x1, y1, x2, y2 = region
         cropped = fullscreen.crop((x1, y1, x2, y2))
         
-        print(f"已选择区域: ({x1}, {y1}) 到 ({x2}, {y2})")
+        print(f"Selected region: ({x1}, {y1}) to ({x2}, {y2})")
         return cropped, region
     
     def save_screenshot(self, img, prefix="screenshot"):
@@ -230,7 +230,7 @@ class ScreenshotCapture:
         filepath = os.path.join(self.save_dir, filename)
         
         img.save(filepath)
-        print(f"截图已保存: {filepath}")
+        print(f"Screenshot saved: {filepath}")
         return filepath
     
     def capture_and_save(self, prefix="screenshot"):
@@ -254,12 +254,12 @@ class ScreenshotCapture:
 if __name__ == "__main__":
     # Test the screenshot capture
     capture = ScreenshotCapture()
-    print("准备截图...")
+    print("Preparing screenshot...")
     filepath, region = capture.capture_and_save()
     if filepath:
-        print(f"截图已保存至: {filepath}")
+        print(f"Screenshot saved to: {filepath}")
         if region:
             x1, y1, x2, y2 = region
-            print(f"区域坐标: ({x1}, {y1}) 到 ({x2}, {y2})")
+            print(f"Region coordinates: ({x1}, {y1}) to ({x2}, {y2})")
     else:
-        print("未保存截图")
+        print("Screenshot not saved")

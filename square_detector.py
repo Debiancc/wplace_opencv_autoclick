@@ -102,7 +102,7 @@ class SquareDetector:
         # Detect background color if not provided
         if background_color is None:
             background_color = self._detect_background_color(cv_image)
-            print(f"检测到背景色: BGR{background_color.astype(int)}")
+            print(f"Detected background color: BGR{background_color.astype(int)}")
         
         # Calculate color difference from background
         diff = np.linalg.norm(cv_image - background_color, axis=2)
@@ -112,7 +112,7 @@ class SquareDetector:
         std_diff = np.std(diff)
         threshold = mean_diff + 1.5 * std_diff
         
-        print(f"颜色差异阈值: {threshold:.2f}")
+        print(f"Color difference threshold: {threshold:.2f}")
         
         # Create binary mask
         mask = (diff > threshold).astype(np.uint8) * 255
@@ -132,18 +132,18 @@ class SquareDetector:
         # Find contours
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        print(f"发现 {len(contours)} 个轮廓")
+        print(f"Found {len(contours)} contours")
         
         # Calculate area statistics for adaptive filtering
         if len(contours) == 0:
-            print("未检测到任何轮廓")
+            print("No contours detected")
             return []
         
         # Filter out very small noise first (hard limit)
         valid_contours = [c for c in contours if cv2.contourArea(c) > 10]
         
         if len(valid_contours) == 0:
-            print("未检测到有效面积(>10px)的轮廓")
+            print("No valid contours (>10px) detected")
             return []
             
         areas = [cv2.contourArea(c) for c in valid_contours]
@@ -153,7 +153,7 @@ class SquareDetector:
         min_area = max(10, median_area * 0.2) # At least 10px
         max_area = median_area * 5.0
         
-        print(f"面积过滤范围: {min_area:.1f} - {max_area:.1f} px (中位数: {median_area:.1f})")
+        print(f"Area filter range: {min_area:.1f} - {max_area:.1f} px (median: {median_area:.1f})")
         
         # Filter and extract square information
         detections = []
@@ -171,7 +171,7 @@ class SquareDetector:
             # Aspect ratio filter (should be close to square)
             aspect_ratio = w / h if h > 0 else 0
             if aspect_ratio < 0.5 or aspect_ratio > 2.0:
-                print(f"轮廓 #{i} 拒绝: 长宽比 {aspect_ratio:.2f}")
+                print(f"Contour #{i} rejected: aspect ratio {aspect_ratio:.2f}")
                 continue
             
             # Extract region of interest (ROI) for additional validation
@@ -186,7 +186,7 @@ class SquareDetector:
             
             # If filled ratio is too low, it's likely a hollow shape/icon
             if filled_ratio < 0.4: # Relaxed from 0.5
-                print(f"轮廓 #{i} 拒绝: 填充率 {filled_ratio:.2f} < 0.4")
+                print(f"Contour #{i} rejected: fill ratio {filled_ratio:.2f} < 0.4")
                 continue
             
             # 2. Check if the region is dark/black (relative to background)
@@ -200,7 +200,7 @@ class SquareDetector:
             # Solid black squares should be significantly darker than background
             # Or just use a relaxed absolute threshold
             if mean_brightness > 100 and mean_brightness > (bg_brightness - 30):
-                print(f"轮廓 #{i} 拒绝: 亮度 {mean_brightness:.1f} (背景: {bg_brightness:.1f})")
+                print(f"Contour #{i} rejected: brightness {mean_brightness:.1f} (background: {bg_brightness:.1f})")
                 continue
             
             # 3. Check edge density (hollow shapes have mostly edges, solid shapes are filled)
@@ -216,7 +216,7 @@ class SquareDetector:
             
             # Solid squares should have high edge ratio
             if edge_ratio < 0.3: # Relaxed from 0.4
-                print(f"轮廓 #{i} 拒绝: 边缘占比 {edge_ratio:.2f} < 0.3")
+                print(f"Contour #{i} rejected: edge ratio {edge_ratio:.2f} < 0.3")
                 continue
             
             # Calculate center
@@ -235,7 +235,7 @@ class SquareDetector:
             
             detections.append(detection)
         
-        print(f"检测到 {len(detections)} 个方块点")
+        print(f"Detected {len(detections)} square points")
         
         return detections
     
@@ -315,11 +315,11 @@ if __name__ == "__main__":
     test_image_path = "screenshots/screenshot_20251130_174034.png"
     
     if os.path.exists(test_image_path):
-        print(f"测试图像: {test_image_path}")
+        print(f"Test image: {test_image_path}")
         
         # Load image
         img = Image.open(test_image_path)
-        print(f"图像尺寸: {img.size}")
+        print(f"Image size: {img.size}")
         
         # Create detector
         detector = SquareDetector()
@@ -328,12 +328,12 @@ if __name__ == "__main__":
         detections = detector.detect_squares(img, visualize_steps=True)
         
         # Print results
-        print(f"\n检测结果：")
+        print(f"\nDetection results:")
         for i, det in enumerate(detections[:10]):  # Show first 10
-            print(f"  方块 {i+1}: 中心 {det['center']}, 面积 {det['area']}px")
+            print(f"  Square {i+1}: center {det['center']}, area {det['area']}px")
         
         if len(detections) > 10:
-            print(f"  ... 还有 {len(detections) - 10} 个方块")
+            print(f"  ... and {len(detections) - 10} more squares")
         
         # Visualize
         visualized = detector.visualize_detections(img, detections)
@@ -341,7 +341,7 @@ if __name__ == "__main__":
         # Save result
         output_path = test_image_path.replace('.png', '_squares_detected.png')
         visualized.save(output_path)
-        print(f"\n可视化结果已保存: {output_path}")
+        print(f"\nVisualization saved: {output_path}")
     else:
-        print(f"测试图像不存在: {test_image_path}")
-        print("请先运行截图功能生成测试图像")
+        print(f"Test image does not exist: {test_image_path}")
+        print("Please run screenshot function first to generate test image")
