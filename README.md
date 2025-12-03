@@ -1,4 +1,4 @@
-# OpenCV Auto-Click Screenshot Tool
+# Wplace.live Auto-Click Screenshot Tool
 
 ![Demo](assets/demo.png)
 
