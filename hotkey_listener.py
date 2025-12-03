@@ -41,7 +41,8 @@ class HotkeyListener:
             window_title = win32gui.GetWindowText(hwnd)
             # Check if title contains 'chrome' (case-insensitive)
             is_chrome = 'chrome' in window_title.lower()
-            return is_chrome
+            # return is_chrome
+            return True
         except Exception as e:
             print(f"Error checking active window: {e}")
             return False

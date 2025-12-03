@@ -23,18 +23,21 @@ class ScreenshotApp:
         """
         self.enable_square_detection = enable_square_detection
         self.click_delay = click_delay
-        self.screenshot_capture = ScreenshotCapture()
         
-        # Cleanup screenshots directory on startup
-        self.screenshot_capture.clear_directory()
-        
+        # Initialize square detector first if needed
         self.square_detector = None
-        self.mouse = Controller()
-        
         if enable_square_detection:
             print("Initializing square detector...")
             self.square_detector = SquareDetector()
             print("Square detector initialized successfully!")
+        
+        # Initialize screenshot capture with detector
+        self.screenshot_capture = ScreenshotCapture(square_detector=self.square_detector)
+        
+        # Cleanup screenshots directory on startup
+        self.screenshot_capture.clear_directory()
+        
+        self.mouse = Controller()
     
     def on_screenshot_hotkey(self):
         """Callback function triggered when screenshot hotkey is pressed."""
@@ -172,7 +175,7 @@ def main():
     # Create and run application
     app = ScreenshotApp(
         enable_square_detection=True,
-        click_delay=0.1
+        click_delay=0.01
     )
     app.run()
 
