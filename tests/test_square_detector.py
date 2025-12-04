@@ -52,3 +52,44 @@ def test_detection_with_sample_image(detector, test_image_path):
         abs_x, abs_y = det['absolute_coords']
         assert abs_x == cx + offset_x
         assert abs_y == cy + offset_y
+
+def test_detection_with_1199_image(detector):
+    """Test detection with 1199.png - should detect exactly 1196 squares."""
+    test_image_path = os.path.join("tests", "1199.png")
+    
+    if not os.path.exists(test_image_path):
+        pytest.skip(f"Test image not found: {test_image_path}")
+        
+    print(f"\nTesting with image: {test_image_path}")
+    image = Image.open(test_image_path)
+    
+    # Run detection
+    detections = detector.detect_squares(image, visualize_steps=False)
+    
+    # Assertions
+    assert isinstance(detections, list)
+    print(f"Detected {len(detections)} squares")
+    
+    # We expect exactly 1196 detections in this image (confirmed by user)
+    expected_count = 1196
+    assert len(detections) == expected_count, \
+        f"Should detect exactly {expected_count} squares, but found {len(detections)}"
+    
+    # Calculate absolute coordinates (simulating a region offset)
+    offset_x, offset_y = 0, 0
+    detections = detector.calculate_absolute_coordinates(detections, (offset_x, offset_y))
+
+    # Verify detection structure and coordinates
+    for det in detections:
+        assert 'center' in det
+        assert 'bbox' in det
+        assert 'area' in det
+        assert 'absolute_coords' in det
+        
+        # Verify absolute coords are correct relative to center
+        cx, cy = det['center']
+        abs_x, abs_y = det['absolute_coords']
+        assert abs_x == cx + offset_x
+        assert abs_y == cy + offset_y
+    
+    print(f"✓ Successfully verified all 1199 squares")

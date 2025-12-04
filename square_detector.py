@@ -110,7 +110,7 @@ class SquareDetector:
         # Adaptive thresholding based on statistics
         mean_diff = np.mean(diff)
         std_diff = np.std(diff)
-        threshold = mean_diff + 1.5 * std_diff
+        threshold = mean_diff + 1.2 * std_diff  # Reduced from 1.5 to be more sensitive
         
         print(f"Color difference threshold: {threshold:.2f}")
         
@@ -122,7 +122,7 @@ class SquareDetector:
             cv2.imwrite("debug_mask_raw.png", mask)
         
         # Morphological operations to reduce noise
-        kernel = np.ones((3, 3), np.uint8)
+        kernel = np.ones((2, 2), np.uint8)  # Reduced from 3x3 to prevent merging
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         
@@ -170,7 +170,7 @@ class SquareDetector:
             
             # Aspect ratio filter (should be close to square)
             aspect_ratio = w / h if h > 0 else 0
-            if aspect_ratio < 0.5 or aspect_ratio > 2.0:
+            if aspect_ratio < 0.4 or aspect_ratio > 2.5:
                 print(f"Contour #{i} rejected: aspect ratio {aspect_ratio:.2f}")
                 continue
             
@@ -185,8 +185,8 @@ class SquareDetector:
             filled_ratio = area / bbox_area if bbox_area > 0 else 0
             
             # If filled ratio is too low, it's likely a hollow shape/icon
-            if filled_ratio < 0.4: # Relaxed from 0.5
-                print(f"Contour #{i} rejected: fill ratio {filled_ratio:.2f} < 0.4")
+            if filled_ratio < 0.35: # Relaxed from 0.4
+                print(f"Contour #{i} rejected: fill ratio {filled_ratio:.2f} < 0.35")
                 continue
             
             # 2. Check if the region is dark/black (relative to background)
@@ -197,10 +197,11 @@ class SquareDetector:
             # Calculate background brightness (approximate)
             bg_brightness = np.mean(background_color)
             
-            # Solid black squares should be significantly darker than background
-            # Or just use a relaxed absolute threshold
-            if mean_brightness > 100 and mean_brightness > (bg_brightness - 30):
-                print(f"Contour #{i} rejected: brightness {mean_brightness:.1f} (background: {bg_brightness:.1f})")
+            # Squares should be noticeably different from background
+            # Allow both dark squares and light gray squares
+            brightness_diff = abs(mean_brightness - bg_brightness)
+            if brightness_diff < 10:  # Too similar to background
+                print(f"Contour #{i} rejected: brightness {mean_brightness:.1f} too close to background {bg_brightness:.1f}")
                 continue
             
             # 3. Check edge density (hollow shapes have mostly edges, solid shapes are filled)
@@ -215,8 +216,8 @@ class SquareDetector:
             edge_ratio = filled_pixels / bbox_area if bbox_area > 0 else 0
             
             # Solid squares should have high edge ratio
-            if edge_ratio < 0.3: # Relaxed from 0.4
-                print(f"Contour #{i} rejected: edge ratio {edge_ratio:.2f} < 0.3")
+            if edge_ratio < 0.25: # Relaxed from 0.3
+                print(f"Contour #{i} rejected: edge ratio {edge_ratio:.2f} < 0.25")
                 continue
             
             # Calculate center
