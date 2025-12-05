@@ -200,7 +200,7 @@ class SquareDetector:
             # Squares should be noticeably different from background
             # Allow both dark squares and light gray squares
             brightness_diff = abs(mean_brightness - bg_brightness)
-            if brightness_diff < 10:  # Too similar to background
+            if brightness_diff < 5:  # Reduced threshold to detect lighter squares
                 print(f"Contour #{i} rejected: brightness {mean_brightness:.1f} too close to background {bg_brightness:.1f}")
                 continue
             

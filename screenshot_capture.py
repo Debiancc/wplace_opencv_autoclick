@@ -28,6 +28,8 @@ class RegionSelector:
         self.detections = []
         self.detection_markers = []
         self.detection_summary_text = None
+        self.detection_pending = None  # Timer for debouncing
+        self.detection_running = False  # Flag to prevent overlapping detections
         
         # Create fullscreen transparent window
         self.root = tk.Tk()
@@ -194,9 +196,7 @@ class RegionSelector:
             tags='dimension'
         )
         
-        # Run detection if detector is available and in adjusting mode
-        if self.mode == "adjusting" and self.square_detector:
-            self.run_detection()
+        # Don't run detection during drag - only on mouse release for better performance
     
     def get_handle_at_position(self, x, y):
         """Determine which handle or region is at the given position."""
@@ -344,6 +344,10 @@ class RegionSelector:
                 self.mode = "adjusting"
                 self.create_instructions()
                 self.draw_selection_box()
+                
+                # Run initial detection when selection is first created
+                if self.square_detector:
+                    self.schedule_detection()
             else:
                 # Selection too small, stay in drawing mode
                 if self.rect:
@@ -354,11 +358,30 @@ class RegionSelector:
             self.current_handle = None
             self.drag_start_pos = None
             self.drag_start_rect = None
+            
+            # Run detection after drag completes for better performance
+            if self.square_detector:
+                self.schedule_detection()
+    
+    def schedule_detection(self):
+        """Schedule detection to run after a short delay (debouncing)."""
+        # Cancel any pending detection
+        if self.detection_pending:
+            self.root.after_cancel(self.detection_pending)
+        
+        # Schedule new detection after 300ms of inactivity
+        self.detection_pending = self.root.after(300, self.run_detection)
     
     def run_detection(self):
         """Run square detection on the current selection region."""
         if not self.rect_coords or not self.square_detector:
             return
+        
+        # Prevent overlapping detection calls
+        if self.detection_running:
+            return
+        
+        self.detection_running = True
         
         try:
             x1, y1, x2, y2 = self.rect_coords
@@ -389,6 +412,8 @@ class RegionSelector:
             # Silently handle errors to avoid disrupting UI
             self.detections = []
             pass
+        finally:
+            self.detection_running = False
     
     def clear_detection_display(self):
         """Clear all detection visual elements."""

@@ -14,17 +14,21 @@ from square_detector import SquareDetector
 def detector():
     return SquareDetector()
 
-@pytest.fixture
-def test_image_path():
-    return os.path.join("tests", "test_image.png")
-
-def test_detection_with_sample_image(detector, test_image_path):
-    """Test detection using the specific sample image provided."""
-    if not os.path.exists(test_image_path):
-        pytest.skip(f"Test image not found: {test_image_path}")
+def verify_square_detection(detector, image_path, expected_count, offset=(0, 0)):
+    """
+    Helper function to verify square detection for a given image.
+    
+    Args:
+        detector: SquareDetector instance
+        image_path: Path to the test image
+        expected_count: Expected number of squares to detect
+        offset: Tuple of (offset_x, offset_y) for absolute coordinate calculation
+    """
+    if not os.path.exists(image_path):
+        pytest.skip(f"Test image not found: {image_path}")
         
-    print(f"\nTesting with image: {test_image_path}")
-    image = Image.open(test_image_path)
+    print(f"\nTesting with image: {image_path}")
+    image = Image.open(image_path)
     
     # Run detection
     detections = detector.detect_squares(image, visualize_steps=False)
@@ -33,50 +37,12 @@ def test_detection_with_sample_image(detector, test_image_path):
     assert isinstance(detections, list)
     print(f"Detected {len(detections)} squares")
     
-    # We expect exactly 12 detections in this image
-    assert len(detections) == 12, f"Should detect exactly 12 squares, but found {len(detections)}"
-    
-    # Calculate absolute coordinates (simulating a region offset)
-    offset_x, offset_y = 100, 100
-    detections = detector.calculate_absolute_coordinates(detections, (offset_x, offset_y))
-
-    # Verify detection structure and coordinates
-    for det in detections:
-        assert 'center' in det
-        assert 'bbox' in det
-        assert 'area' in det
-        assert 'absolute_coords' in det
-        
-        # Verify absolute coords are correct relative to center
-        cx, cy = det['center']
-        abs_x, abs_y = det['absolute_coords']
-        assert abs_x == cx + offset_x
-        assert abs_y == cy + offset_y
-
-def test_detection_with_1199_image(detector):
-    """Test detection with 1199.png - should detect exactly 1196 squares."""
-    test_image_path = os.path.join("tests", "1199.png")
-    
-    if not os.path.exists(test_image_path):
-        pytest.skip(f"Test image not found: {test_image_path}")
-        
-    print(f"\nTesting with image: {test_image_path}")
-    image = Image.open(test_image_path)
-    
-    # Run detection
-    detections = detector.detect_squares(image, visualize_steps=False)
-    
-    # Assertions
-    assert isinstance(detections, list)
-    print(f"Detected {len(detections)} squares")
-    
-    # We expect exactly 1196 detections in this image (confirmed by user)
-    expected_count = 1196
+    # Verify expected count
     assert len(detections) == expected_count, \
         f"Should detect exactly {expected_count} squares, but found {len(detections)}"
     
-    # Calculate absolute coordinates (simulating a region offset)
-    offset_x, offset_y = 0, 0
+    # Calculate absolute coordinates
+    offset_x, offset_y = offset
     detections = detector.calculate_absolute_coordinates(detections, (offset_x, offset_y))
 
     # Verify detection structure and coordinates
@@ -92,4 +58,29 @@ def test_detection_with_1199_image(detector):
         assert abs_x == cx + offset_x
         assert abs_y == cy + offset_y
     
-    print(f"✓ Successfully verified all 1199 squares")
+    print(f"✓ Successfully verified all {expected_count} squares")
+
+def test_detection_with_sample_image(detector):
+    """Test detection using the specific sample image provided."""
+    verify_square_detection(
+        detector,
+        os.path.join("tests", "basic.png"),
+        expected_count=12,
+        offset=(100, 100)
+    )
+
+def test_detection_with_1199_image(detector):
+    """Test detection with 1196.png - should detect exactly 1196 squares."""
+    verify_square_detection(
+        detector,
+        os.path.join("tests", "1196.png"),
+        expected_count=1196
+    )
+
+def test_detection_with_white16_image(detector):
+    """Test detection with white16.png - should detect exactly 16 squares."""
+    verify_square_detection(
+        detector,
+        os.path.join("tests", "white16.png"),
+        expected_count=16
+    )
