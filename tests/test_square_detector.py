@@ -77,10 +77,27 @@ def test_detection_with_1199_image(detector):
         expected_count=1196
     )
 
+
 def test_detection_with_white16_image(detector):
     """Test detection with white16.png - should detect exactly 16 squares."""
     verify_square_detection(
         detector,
         os.path.join("tests", "white16.png"),
         expected_count=16
+    )
+
+def test_detection_with_light_yellow_7_image(detector):
+    """Test detection with light_yellow_6.png - should detect exactly 6 squares."""
+    verify_square_detection(
+        detector,
+        os.path.join("tests", "light_yellow_7.png"),
+        expected_count=7
+    )
+
+def test_detection_with_light_cyan_4_image(detector):
+    """Test detection with light_cyan_4.png - should detect exactly 4 squares."""
+    verify_square_detection(
+        detector,
+        os.path.join("tests", "light_cyan_4.png"),
+        expected_count=4
     )
