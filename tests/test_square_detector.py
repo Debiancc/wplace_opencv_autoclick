@@ -101,3 +101,11 @@ def test_detection_with_light_cyan_4_image(detector):
         os.path.join("tests", "light_cyan_4.png"),
         expected_count=4
     )
+
+def test_detection_with_demo_image(detector):
+    """Test detection with assets/demo.png - should detect exactly 17 squares."""
+    verify_square_detection(
+        detector,
+        os.path.join("assets", "demo.png"),
+        expected_count=17
+    )
