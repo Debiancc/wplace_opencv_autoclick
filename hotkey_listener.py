@@ -5,7 +5,11 @@ Only triggers when Chrome is the active window.
 """
 from pynput import keyboard
 from pynput.keyboard import Key, KeyCode
-import win32gui
+
+try:
+    import win32gui
+except ImportError:
+    win32gui = None
 
 
 class HotkeyListener:
@@ -34,6 +38,11 @@ class HotkeyListener:
         Returns:
             bool: True if Chrome is the active window
         """
+        if win32gui is None:
+            # On non-Windows platforms (or if pywin32 not installed), assume Chrome is active
+            # This allows the hotkey to work regardless of the active window
+            return True
+
         try:
             # Get the handle of the foreground window
             hwnd = win32gui.GetForegroundWindow()

@@ -1,4 +1,5 @@
 import sys
+import importlib
 from unittest.mock import MagicMock, patch
 import pytest
 
@@ -68,7 +69,7 @@ def test_initialization(listener, hotkey_listener_module):
     assert listener.hotkey == 'f2'
 
 def test_is_chrome_active_always_true(listener):
-    # Current implementation returns True always inside try block
+    # Current implementation returns True always inside try block (when win32gui exists)
     assert listener._is_chrome_active() is True
 
 def test_on_press_f2_triggers_callback(listener):
@@ -98,10 +99,6 @@ def test_on_release_other_key_does_nothing(listener):
 
 def test_start_starts_listener(listener):
     # We need to access the mock_keyboard.Listener used by the module
-    # It was patched into sys.modules['pynput.keyboard']
-    # But getting it from sys.modules inside this test function might be tricky if patch context ended?
-    # No, fixture uses yield, so patch context is active during tests.
-
     mock_listener_cls = sys.modules['pynput.keyboard'].Listener
 
     listener.start()
@@ -120,3 +117,43 @@ def test_stop_stops_listener(listener):
     listener.listener = MagicMock()
     listener.stop()
     listener.listener.stop.assert_called_once()
+
+def test_no_win32gui_behavior():
+    """Test behavior when win32gui is not importable."""
+    # We need to simulate the environment where win32gui is missing
+    # But preserve pynput
+
+    # 1. Prepare mocks for pynput
+    mock_pynput = MagicMock()
+    mock_keyboard = MagicMock()
+    mock_pynput.keyboard = mock_keyboard
+    mock_keyboard.Key = MagicMock()
+    mock_keyboard.Listener = MagicMock()
+
+    # 2. Patch sys.modules WITHOUT win32gui
+    modules_to_patch = {
+        'pynput': mock_pynput,
+        'pynput.keyboard': mock_keyboard,
+    }
+
+    # Also ensure win32gui is NOT in sys.modules
+    # We use a new patch context to isolate this test
+    with patch.dict(sys.modules, modules_to_patch):
+        if 'win32gui' in sys.modules:
+            del sys.modules['win32gui']
+
+        # Reload hotkey_listener
+        if 'hotkey_listener' in sys.modules:
+            del sys.modules['hotkey_listener']
+
+        import hotkey_listener
+        importlib.reload(hotkey_listener)
+
+        # Verify win32gui is None in the module
+        assert hotkey_listener.win32gui is None
+
+        # Create listener
+        listener = hotkey_listener.HotkeyListener()
+
+        # Verify _is_chrome_active returns True
+        assert listener._is_chrome_active() is True

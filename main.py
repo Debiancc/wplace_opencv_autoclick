@@ -174,8 +174,8 @@ def main():
     
     # Create and run application
     app = ScreenshotApp(
-        enable_square_detection=True,
-        click_delay=0.01
+        enable_square_detection=args.detect_squares,
+        click_delay=args.click_delay
     )
     app.run()
 

@@ -27,6 +27,8 @@ A powerful screenshot script with intelligent wplace.live square detection and a
     ```
     *Dependencies include: `opencv-python`, `pillow`, `pynput`, `mss`, `numpy`.*
 
+    *Note: On Linux, you may need to install additional system packages for OpenCV and Tkinter (e.g., `sudo apt-get install python3-tk libgl1`).*
+
 ## Usage
 
 ### Basic Screenshot Capture
@@ -96,6 +98,26 @@ The application includes debug utilities in `debug_detection.py` for troubleshoo
 A sample image is provided in `assets/demo.png` to test the detection logic. You can verify it by running the tests.
 
 ![Demo](assets/demo.png)
+
+## Troubleshooting
+
+### Common Issues
+
+1.  **"ImportError: this platform is not supported" (Linux)**
+    -   This usually means you are running in a headless environment without an X server. Ensure you have an X server running or use `Xvfb` for testing.
+
+3.  **Permissions on Linux**
+    -   You may need to run with `sudo` or configure permissions to allow `pynput` to monitor keyboard events.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1.  Fork the repository
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
 
 ## Requirements
 
